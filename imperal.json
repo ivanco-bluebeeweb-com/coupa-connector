@@ -1,0 +1,2780 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.11.0",
+  "app_id": "coupa-connector",
+  "version": "0.1.0",
+  "name": "Coupa",
+  "description": "Connect your own Coupa Business Spend Management instance through OAuth2 client credentials. Read and safely manage Requisitions, Purchase Orders, Invoices, Suppliers, Contracts, and Expense Reports through the instance's licensed Core API modules.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "coupa:read",
+    "coupa:write"
+  ],
+  "tools": [
+    {
+      "name": "connect_coupa",
+      "description": "Connect a Coupa instance (OAuth2 client credentials), after validating connectivity.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "coupa.provider.connected"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "label": {
+            "default": "",
+            "description": "Friendly instance label, e.g. 'Acme Production'.",
+            "title": "Label",
+            "type": "string"
+          },
+          "instance_url": {
+            "description": "Coupa instance base URL, e.g. https://acme.coupahost.com.",
+            "title": "Instance Url",
+            "type": "string"
+          },
+          "client_id": {
+            "description": "OAuth2 client ID issued via Coupa admin (Setup > OAuth2/OpenID Connect Clients).",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "description": "OAuth2 client secret for that client.",
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_url",
+          "client_id",
+          "client_secret"
+        ],
+        "title": "ConnectCoupaParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "instance_url": {
+            "title": "Instance Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "label",
+          "instance_url"
+        ],
+        "title": "CoupaConnection",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.connect_coupa",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "disconnect_coupa",
+      "description": "Disconnect one Coupa instance: deletes only the credentials saved in Imperal. Nothing is changed in Coupa.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "coupa.provider.disconnected"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Saved Coupa instance connection ID to remove from Imperal.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectCoupaParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "deleted": {
+            "title": "Deleted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "deleted"
+        ],
+        "title": "DeleteResult",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.disconnect_coupa",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_connections",
+      "description": "List the connected Coupa instances.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaConnection": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "instance_url": {
+                "title": "Instance Url",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "label",
+              "instance_url"
+            ],
+            "title": "CoupaConnection",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaConnection"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "ConnectionList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_connections",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_requisitions",
+      "description": "List Requisitions on the connected Coupa instance, optionally filtered by status.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "description": "Optional requisition status filter, e.g. approved, pending_approval.",
+            "title": "Status",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListRequisitionsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_requisitions",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_requisition",
+      "description": "Read one Requisition in full by its unique identifier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "requisition_id": {
+            "description": "Coupa requisition unique identifier.",
+            "title": "Requisition Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "requisition_id"
+        ],
+        "title": "GetRequisitionParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_requisition",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "create_requisition",
+      "description": "Create a new Requisition with line items.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "coupa.requisition.created"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "justification": {
+            "description": "Requisition justification/description.",
+            "title": "Justification",
+            "type": "string"
+          },
+          "requested_by_email": {
+            "description": "Email of the Coupa user this requisition is created for.",
+            "title": "Requested By Email",
+            "type": "string"
+          },
+          "lines": {
+            "description": "List of {description, quantity, price, need_by_date} line dicts.",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Lines",
+            "type": "array"
+          }
+        },
+        "required": [
+          "justification",
+          "requested_by_email",
+          "lines"
+        ],
+        "title": "CreateRequisitionParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.create_requisition",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_purchase_orders",
+      "description": "List Purchase Orders, optionally filtered by supplier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "supplier": {
+            "default": "",
+            "description": "Optional supplier name filter.",
+            "title": "Supplier",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListPurchaseOrdersParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_purchase_orders",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_purchase_order",
+      "description": "Read one Purchase Order in full by its unique identifier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "order_id": {
+            "description": "Coupa purchase order unique identifier.",
+            "title": "Order Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "title": "GetPurchaseOrderParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_purchase_order",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_invoices",
+      "description": "List Invoices, optionally filtered by status.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "description": "Optional invoice status filter, e.g. approved, disputed, pending_approval.",
+            "title": "Status",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListInvoicesParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_invoices",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_invoice",
+      "description": "Read one Invoice in full by its unique identifier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "invoice_id": {
+            "description": "Coupa invoice unique identifier.",
+            "title": "Invoice Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ],
+        "title": "GetInvoiceParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_invoice",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_suppliers",
+      "description": "List Suppliers registered on this Coupa instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "query": {
+            "default": "",
+            "description": "Optional supplier name search filter.",
+            "title": "Query",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListSuppliersParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_suppliers",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_supplier",
+      "description": "Read one Supplier in full by its Supplier ID.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "supplier_id": {
+            "description": "Coupa supplier unique identifier.",
+            "title": "Supplier Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ],
+        "title": "GetSupplierParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_supplier",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_contracts",
+      "description": "List Contracts, optionally filtered by status.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListContractsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_contracts",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_contract",
+      "description": "Read one Contract in full by its unique identifier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "contract_id": {
+            "description": "Coupa contract unique identifier.",
+            "title": "Contract Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contract_id"
+        ],
+        "title": "GetContractParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_contract",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "list_expense_reports",
+      "description": "List Expense Reports, optionally filtered by status.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "",
+            "description": "Optional expense report status filter.",
+            "title": "Status",
+            "type": "string"
+          },
+          "top": {
+            "default": 50,
+            "description": "Maximum records to return (1-200).",
+            "maximum": 200,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "title": "ListExpenseReportsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "CoupaRecord": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "title": "Fields",
+                "type": "object"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "CoupaRecord",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/$defs/CoupaRecord"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecordList",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.list_expense_reports",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "get_expense_report",
+      "description": "Read one Expense Report in full by its unique identifier.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "expense_report_id": {
+            "description": "Coupa expense report unique identifier.",
+            "title": "Expense Report Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expense_report_id"
+        ],
+        "title": "GetExpenseReportParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "fields": {
+            "additionalProperties": true,
+            "title": "Fields",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CoupaRecord",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.get_expense_report",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    },
+    {
+      "name": "audit_coupa_access",
+      "description": "Probe every core Coupa Core API module (Requisitions, POs, Invoices, Suppliers, Contracts, Expense Reports) and report which are actually enabled for this instance, without changing anything.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional saved Coupa instance connection ID. Omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditAccessParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "Capability": {
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "title": "Id"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "kind": {
+                "default": "",
+                "title": "Kind",
+                "type": "string"
+              },
+              "subtitle": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Subtitle"
+              },
+              "description": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Description"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Status"
+              },
+              "url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Url"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "available": {
+                "title": "Available",
+                "type": "boolean"
+              },
+              "note": {
+                "title": "Note",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "name",
+              "available",
+              "note"
+            ],
+            "title": "Capability",
+            "type": "object",
+            "x-sdl": "entity"
+          }
+        },
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "kind": {
+            "default": "",
+            "title": "Kind",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Url"
+          },
+          "instance_url": {
+            "title": "Instance Url",
+            "type": "string"
+          },
+          "capabilities": {
+            "items": {
+              "$ref": "#/$defs/Capability"
+            },
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "available_count": {
+            "default": 0,
+            "title": "Available Count",
+            "type": "integer"
+          },
+          "unavailable_count": {
+            "default": 0,
+            "title": "Unavailable Count",
+            "type": "integer"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/$defs/Capability"
+            },
+            "title": "Checks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "instance_url"
+        ],
+        "title": "AccessAudit",
+        "type": "object",
+        "x-sdl": "entity"
+      },
+      "event": "coupa-connector.audit_coupa_access",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "coupa"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 636,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "secrets": [
+    {
+      "name": "coupa_connections",
+      "description": "JSON list of connected Coupa instances and encrypted OAuth credentials. Managed only through connect_coupa and disconnect_coupa.",
+      "required": true,
+      "write_mode": "both",
+      "max_bytes": 65536,
+      "scope": "user",
+      "rotation_hint_days": 90
+    }
+  ],
+  "panels": [
+    {
+      "panel_id": "secrets",
+      "slot": "right",
+      "title": "Secrets",
+      "tree": {},
+      "icon": "KeyRound",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "coupa_connect_help",
+      "slot": "center",
+      "title": "Connect Coupa",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "coupa_sidebar",
+      "slot": "left",
+      "title": "Coupa",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false,
+      "default_width": 340,
+      "min_width": 280,
+      "max_width": 460
+    },
+    {
+      "panel_id": "coupa_center",
+      "slot": "center",
+      "title": "Coupa overview",
+      "tree": {},
+      "icon": "ShoppingCart",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "coupa_settings",
+      "slot": "center",
+      "title": "Coupa settings",
+      "tree": {},
+      "icon": "settings",
+      "refresh": "manual",
+      "center_overlay": true
+    }
+  ]
+}
