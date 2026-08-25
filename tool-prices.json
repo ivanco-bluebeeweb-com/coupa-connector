@@ -1,0 +1,22 @@
+{
+  "connect_coupa": 0,
+  "disconnect_coupa": 0,
+  "list_connections": 0,
+
+  "list_requisitions": 8,
+  "get_requisition": 8,
+  "list_purchase_orders": 8,
+  "get_purchase_order": 8,
+  "list_invoices": 8,
+  "get_invoice": 8,
+  "list_suppliers": 8,
+  "get_supplier": 8,
+  "list_contracts": 8,
+  "get_contract": 8,
+  "list_expense_reports": 8,
+  "get_expense_report": 8,
+
+  "audit_coupa_access": 16,
+
+  "create_requisition": 20
+}
