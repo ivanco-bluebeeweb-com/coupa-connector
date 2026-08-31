@@ -107,7 +107,7 @@ async def connect_coupa(ctx, params: ConnectCoupaParams) -> ActionResult:
     }
     connections.append(connection)
     await _save_connections(ctx, connections)
-    return ActionResult.ok(_connection_entity(connection))
+    return ActionResult.success(_connection_entity(connection), summary="Coupa connected.")
 
 
 @chat.function("disconnect_coupa", "Disconnect one Coupa instance: deletes only the credentials saved in Imperal. Nothing is changed in Coupa.", action_type="write", chain_callable=True, data_model=DeleteResult, event="coupa-connector.disconnect_coupa", effects=["coupa.provider.disconnected"])
@@ -118,7 +118,7 @@ async def disconnect_coupa(ctx, params: DisconnectCoupaParams) -> ActionResult:
     if len(remaining) == len(connections):
         return ActionResult.error("No connection found with that id.", code="COUPA_CONNECTION_NOT_FOUND")
     await _save_connections(ctx, remaining)
-    return ActionResult.ok(DeleteResult(deleted=True, id=params.connection_id))
+    return ActionResult.success(DeleteResult(deleted=True, id=params.connection_id), summary="Coupa disconnected.")
 
 
 @chat.function("list_connections", "List the connected Coupa instances.", action_type="read", chain_callable=True, data_model=ConnectionList, event="coupa-connector.list_connections")
@@ -126,7 +126,7 @@ async def list_connections(ctx, params: NoParams) -> ActionResult:
     """Imperal action: list_connections."""
     connections = await _load_connections(ctx)
     items = [_connection_entity(c) for c in connections]
-    return ActionResult.ok(ConnectionList(items=items, total=len(items)))
+    return ActionResult.success(ConnectionList(items=items, total=len(items)), summary="Connections listed.")
 
 
 async def _list_resource(ctx, params, path: str, id_key: str, title_keys: list[str], extra_params: dict | None = None) -> ActionResult:
@@ -143,7 +143,7 @@ async def _list_resource(ctx, params, path: str, id_key: str, title_keys: list[s
         return ActionResult.error(str(exc), code="COUPA_REQUEST_FAILED", retryable=exc.retryable)
     items = cc.rest_items(body)
     records = [_record(item, id_key, title_keys) for item in items]
-    return ActionResult.ok(CoupaRecordList(items=records, total=len(records)))
+    return ActionResult.success(CoupaRecordList(items=records, total=len(records)), summary=" list resource done.")
 
 
 async def _get_resource(ctx, params, path: str, id_key: str, title_keys: list[str]) -> ActionResult:
@@ -155,7 +155,7 @@ async def _get_resource(ctx, params, path: str, id_key: str, title_keys: list[st
         body = await client.request("get", path)
     except cc.CoupaError as exc:
         return ActionResult.error(str(exc), code="COUPA_REQUEST_FAILED", retryable=exc.retryable)
-    return ActionResult.ok(_record(body, id_key, title_keys))
+    return ActionResult.success(_record(body, id_key, title_keys), summary=" get resource done.")
 
 
 @chat.function("list_requisitions", "List Requisitions on the connected Coupa instance, optionally filtered by status.", action_type="read", chain_callable=True, data_model=CoupaRecordList, event="coupa-connector.list_requisitions")
@@ -187,7 +187,7 @@ async def create_requisition(ctx, params: CreateRequisitionParams) -> ActionResu
         body = await client.request("post", "/requisitions", json_body=payload)
     except cc.CoupaError as exc:
         return ActionResult.error(str(exc), code="COUPA_REQUEST_FAILED", retryable=exc.retryable)
-    return ActionResult.ok(_record(body, "id", ["justification", "name"]))
+    return ActionResult.success(_record(body, "id", ["justification", "name"]), summary="Requisition created.")
 
 
 @chat.function("list_purchase_orders", "List Purchase Orders, optionally filtered by supplier.", action_type="read", chain_callable=True, data_model=CoupaRecordList, event="coupa-connector.list_purchase_orders")
@@ -277,10 +277,10 @@ async def audit_coupa_access(ctx, params: AuditAccessParams) -> ActionResult:
         except cc.CoupaError as exc:
             checks.append(Capability(name=name, available=False, note=str(exc)))
     available = sum(1 for c in checks if c.available)
-    return ActionResult.ok(AccessAudit(
+    return ActionResult.success(AccessAudit(
         instance_url=connection.get("instance_url", ""),
         capabilities=checks,
         checks=checks,
         available_count=available,
         unavailable_count=len(checks) - available,
-    ))
+    ), summary="Coupa access audit ready.")
